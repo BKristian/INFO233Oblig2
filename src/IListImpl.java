@@ -6,8 +6,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class IListImpl<E> implements IList<E> {
-    private Node first; // Starten på listen
-    private Node last;  // Slutten på listen
+    IList<E> liste;
+    private Node first; // Starten på listen, er tom
+    private Node last;  // Slutten på listen, er tom
     private int size;   // Antall noder i listen
 
     public IListImpl() {
@@ -18,6 +19,16 @@ public class IListImpl<E> implements IList<E> {
         size = 0;
     }
 
+    public IListImpl(E elem) {
+        liste = new IListImpl<>();
+        liste.add(elem);
+    }
+
+    public IListImpl(E elem, IList<E> list) {
+        liste = new IListImpl<>();
+        liste.add(elem);
+    }
+
     private class Node {
         private E data;        // Dataen noden holder
         private Node next;     // Neste node i listen
@@ -26,46 +37,96 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public E first() throws NoSuchElementException {
-        if(size == 0) {
+        if(isEmpty()) {
             throw new NoSuchElementException();
         }
         return first.next.data;
     }
 
     @Override
-    public IList<E> rest() {
+    public IList<E> rest() throws NoSuchElementException {
+        if(size == 1) {
+            throw new NoSuchElementException(); // Passer at rest() kun kan brukes hvis listen har mer enn ett element
+        }
         IList<E> liste = new IListImpl<>();
-        return null;
+        Iterator<E> iterator = this.iterator();
+        while(iterator.hasNext()) {
+            liste.add(iterator.next());
+        }
+        liste.remove();
+        return liste;
     }
 
     @Override
     public boolean add(E elem) {
-        return false;
+        Node newNode = new Node();
+        newNode.data = elem;
+        newNode.next = last;
+        newNode.previous = last.previous;
+        newNode.previous.next = newNode;
+        last.previous = newNode;
+        ++size;
+        return true;
     }
 
     @Override
     public boolean put(E elem) {
-        return false;
+        Node newNode = new Node();
+        newNode.data = elem;
+        newNode.previous = first;
+        newNode.next = first.next;
+        newNode.next.previous = newNode;
+        first.next = newNode;
+        ++size;
+        return true;
     }
 
     @Override
     public E remove() throws NoSuchElementException {
-        return null;
+        if(isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        Node toRemove = first.next;
+        first.next = toRemove.next;
+        toRemove.next.previous = first;
+        toRemove.next = null;
+        toRemove.previous = null;
+        --size;
+        return toRemove.data;
     }
 
     @Override
     public boolean remove(Object o) {
+        Node node = first;
+        while(node.next != last) {
+            node = node.next;
+            if(node.data == o) {
+                node.previous.next = node.next;
+                node.next.previous = node.previous;
+                node.next = null;
+                node.previous = null;
+                --size;
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean contains(Object o) {
+        Node node = first;
+        while(node.next != last) {
+            node = node.next;
+            if(node.data == o) {
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return size == 0;
     }
 
     @Override
@@ -105,7 +166,7 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
@@ -115,6 +176,39 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public Iterator<E> iterator() {
-        return null;
+        return new Iterator<E>() {
+            private int count = 0;
+            private Node current = first.next;
+
+            @Override
+            public boolean hasNext() {
+                return count < size;
+            }
+
+            public boolean hasPrevious() {
+                return count > 0;
+            }
+
+            @Override
+            public E next() {
+                if(!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                E toReturn = current.data;
+                current = current.next;
+                ++count;
+                return toReturn;
+            }
+
+            public E previous() {
+                if(!hasPrevious()) {
+                    throw new NoSuchElementException();
+                }
+                E toReturn = current.data;
+                current = current.previous;
+                --count;
+                return toReturn;
+            }
+        };
     }
 }
