@@ -114,10 +114,9 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public boolean contains(Object o) {
-        Node node = first;
-        while(node.next != last) {
-            node = node.next;
-            if(node.data == o) {
+        Iterator<E> iterator = this.iterator();
+        while(iterator.hasNext()) {
+            if(iterator.next() == o) {
                 return true;
             }
         }
@@ -131,17 +130,39 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public void append(IList<? extends E> list) {
-
+        Iterator<? extends E> iterator = list.iterator();
+        while(iterator.hasNext()) {
+            this.add(iterator.next());
+        }
     }
 
     @Override
     public void prepend(IList<? extends E> list) {
-
+        Iterator<? extends E> iterator = list.iterator();
+        IList<E> tempList = new IListImpl<>();
+        while(iterator.hasNext()) {
+            tempList.put(iterator.next()); // put() legger alltid elementet inn først, så listen blir reversert
+        }
+        iterator = tempList.iterator();
+        while(iterator.hasNext()) {
+            this.put(iterator.next()); // Den reverserte listen blir lagt til med put(), som legger elementene inn i rett rekkefølge
+        }
     }
 
     @Override
     public IList<E> concat(IList<? extends E>... lists) {
-        return null;
+        IList<E> output = new IListImpl<>();
+        Iterator<? extends E> iterator = this.iterator();
+        while(iterator.hasNext()) {
+            output.add(iterator.next());
+        }
+        for(IList<? extends E> list : lists) {
+            iterator = list.iterator();
+            while(iterator.hasNext()) {
+                output.add(iterator.next());
+            }
+        }
+        return output;
     }
 
     @Override
@@ -177,16 +198,11 @@ public class IListImpl<E> implements IList<E> {
     @Override
     public Iterator<E> iterator() {
         return new Iterator<E>() {
-            private int count = 0;
             private Node current = first.next;
 
             @Override
             public boolean hasNext() {
-                return count < size;
-            }
-
-            public boolean hasPrevious() {
-                return count > 0;
+                return current != last;
             }
 
             @Override
@@ -196,17 +212,6 @@ public class IListImpl<E> implements IList<E> {
                 }
                 E toReturn = current.data;
                 current = current.next;
-                ++count;
-                return toReturn;
-            }
-
-            public E previous() {
-                if(!hasPrevious()) {
-                    throw new NoSuchElementException();
-                }
-                E toReturn = current.data;
-                current = current.previous;
-                --count;
                 return toReturn;
             }
         };

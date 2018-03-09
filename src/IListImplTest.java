@@ -143,7 +143,6 @@ class IListImplTest {
         iterator.next();
         iterator.next();
         assertEquals("test3", iterator.next());
-        assertThrows(NoSuchElementException.class, iterator::next); // TODO: Fjerne denne testen når iterator() har egne tester
     }
 
     /**
@@ -202,5 +201,69 @@ class IListImplTest {
         assertEquals(false, liste.isEmpty());
         assertEquals(2, liste.size());
         assertEquals(true, liste.contains("test2"));
+    }
+
+    /**
+     * Tester at append legger til elementer på slutten av listen, og at prepend legger
+     * til elementer på begynnelsen av listen
+     */
+    @Test
+    void oppgave4_1() {
+        IList<String> append = new IListImpl<>();
+        IList<String> prepend = new IListImpl<>();
+        liste.add("test1");
+        liste.add("test2");
+        append.add("append1");
+        append.add("append2");
+        prepend.add("prepend1");
+        prepend.add("prepend2");
+        liste.append(append);
+        liste.prepend(prepend);
+        Iterator<String> iterator = liste.iterator();
+        assertEquals("prepend1", iterator.next());
+        assertEquals("prepend2", iterator.next());
+        iterator.next();
+        iterator.next();
+        assertEquals("append1", iterator.next());
+        assertEquals("append2", iterator.next());
+    }
+
+    /**
+     * Tester at concat legger sammen forskjellige lister.
+     */
+    @Test
+    void oppgave5_1() {
+        IList<String> concat1 = new IListImpl<>();
+        IList<String> concat2 = new IListImpl<>();
+        liste.add("test1");
+        liste.add("test2");
+        concat1.add("test3");
+        concat1.add("test4");
+        concat2.add("test5");
+        concat2.add("test6");
+        IList<String> concatListe = liste.concat(concat1, concat2);
+        Iterator<String> iterator = concatListe.iterator();
+        int i = 1;
+        while(iterator.hasNext()) {
+            assertEquals("test" + i, iterator.next());
+            ++i;
+        }
+    }
+
+    /**
+     * Tester at iterator går korrekt gjennom listen, og at den kaster NoSuchElementException hvis
+     * man prøver å gå videre i en liste når man er på slutten.
+     */
+    @Test
+    void oppgave7_1() {
+        liste.add("test1");
+        liste.add("test2");
+        Iterator<String> iterator = liste.iterator();
+        int i = 1;
+        while(iterator.hasNext()) {
+            assertEquals("test" + i, iterator.next());
+            ++i;
+        }
+        assertThrows(NoSuchElementException.class, iterator::next);
     }
 }
