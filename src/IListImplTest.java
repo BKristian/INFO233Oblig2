@@ -1,8 +1,7 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -265,5 +264,66 @@ class IListImplTest {
             ++i;
         }
         assertThrows(NoSuchElementException.class, iterator::next);
+    }
+
+
+    /**
+     * Basically samme test som i de vedlagte testene, men med String i stedet.
+     */
+    @Test
+    void oppgave8_1() {
+        IList<String> list2 = new IListImpl<>();
+        List<String> values2 = Arrays.asList("String", "Blueberry", "Red", "Ananas", "X-men");
+
+        for (String value : values2) {
+            list2.add(value);
+        }
+        list2.sort(Comparator.naturalOrder());
+
+        Iterator<String> iterator = list2.iterator();
+        assertEquals("Ananas", iterator.next());
+        assertEquals("Blueberry", iterator.next());
+        assertEquals("Red", iterator.next());
+        assertEquals("String", iterator.next());
+        assertEquals("X-men", iterator.next());
+    }
+
+    /**
+     * Basically samme test som i de vedlagte testene, men med String i stedet.
+     */
+    @Test
+    void oppgave9_1() {
+        List<String> values = Arrays.asList("String", "Blueberry", "Red", "Ananas", "X-men");
+
+        IList<String> list = new IListImpl<>();
+        for (String value : values) {
+            list.add(value);
+        }
+
+        list.filter(n -> n.equals("Red"));
+
+
+        while(list.size() > 0) {
+            String n = list.remove();
+            if (n.equals("Red")) {
+                fail("List contains filtered out elements.");
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    @Test
+    void oppgave10_1() {
+
+    }
+
+    /**
+     *
+     */
+    @Test
+    void oppgave11_1() {
+
     }
 }

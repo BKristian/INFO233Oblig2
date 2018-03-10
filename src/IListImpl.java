@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class IListImpl<E> implements IList<E> {
-    IList<E> liste;
+    private IList<E> liste;
     private Node first; // Starten på listen, er tom
     private Node last;  // Slutten på listen, er tom
     private int size;   // Antall noder i listen
@@ -27,6 +27,7 @@ public class IListImpl<E> implements IList<E> {
     public IListImpl(E elem, IList<E> list) {
         liste = new IListImpl<>();
         liste.add(elem);
+        liste.append(list);
     }
 
     private class Node {
@@ -49,9 +50,8 @@ public class IListImpl<E> implements IList<E> {
             throw new NoSuchElementException(); // Passer at rest() kun kan brukes hvis listen har mer enn ett element
         }
         IList<E> liste = new IListImpl<>();
-        Iterator<E> iterator = this.iterator();
-        while(iterator.hasNext()) {
-            liste.add(iterator.next());
+        for (E elem : this) {
+            liste.add(elem);
         }
         liste.remove();
         return liste;
@@ -105,6 +105,7 @@ public class IListImpl<E> implements IList<E> {
                 node.next.previous = node.previous;
                 node.next = null;
                 node.previous = null;
+                node.data = null;
                 --size;
                 return true;
             }
@@ -114,9 +115,8 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public boolean contains(Object o) {
-        Iterator<E> iterator = this.iterator();
-        while(iterator.hasNext()) {
-            if(iterator.next() == o) {
+        for (E elem : this) {
+            if(elem == o) {
                 return true;
             }
         }
@@ -130,9 +130,8 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public void append(IList<? extends E> list) {
-        Iterator<? extends E> iterator = list.iterator();
-        while(iterator.hasNext()) {
-            this.add(iterator.next());
+        for (E elem : list) {
+            this.add(elem);
         }
     }
 
@@ -152,14 +151,12 @@ public class IListImpl<E> implements IList<E> {
     @Override
     public IList<E> concat(IList<? extends E>... lists) {
         IList<E> output = new IListImpl<>();
-        Iterator<? extends E> iterator = this.iterator();
-        while(iterator.hasNext()) {
-            output.add(iterator.next());
+        for (E elem : this) {
+            output.add(elem);
         }
         for(IList<? extends E> list : lists) {
-            iterator = list.iterator();
-            while(iterator.hasNext()) {
-                output.add(iterator.next());
+            for (E elem : list) {
+                output.add(elem);
             }
         }
         return output;
@@ -167,22 +164,54 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public void sort(Comparator<? super E> c) {
+        if(size < 2) {
+            throw new NoSuchElementException();
+        }
 
+        /*
+        // Bubblesort
+        Node current = first.next;
+        Node next;
+        while(current.next != last) {
+            next = current.next;
+            while(next != last) {
+                if (c.compare(current.data, next.data) > 0) {
+                    E temp = next.data;
+                    next.data = current.data;
+                    current.data = temp;
+                }
+                next = next.next;
+            }
+            current = current.next;
+        }
+        */
     }
 
     @Override
     public void filter(Predicate<? super E> filter) {
-
+        for (E e : this) {
+            if(filter.test(e)) {
+                this.remove(e);
+            }
+        }
     }
 
     @Override
     public <U> IList<U> map(Function<? super E, ? extends U> f) {
-        return null;
+        IList<U> list = new IListImpl<>();
+        for (E e : this) {
+            list.add(f.apply(e));
+        }
+        return list;
     }
 
     @Override
     public <T> T reduce(T t, BiFunction<T, ? super E, T> f) {
-        return null;
+        T output = t;
+        for (E e : this) {
+            output = f.apply(output, e);
+        }
+        return output;
     }
 
     @Override
@@ -192,7 +221,13 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public void clear() {
-
+        Node node = new Node();
+        while(node != last) {
+            node = first.next;
+            node.data = null;
+            node.next = null;
+            node.previous = null;
+        }
     }
 
     @Override
@@ -213,6 +248,17 @@ public class IListImpl<E> implements IList<E> {
                 E toReturn = current.data;
                 current = current.next;
                 return toReturn;
+            }
+
+            // Bruker ikke remove(Object) for å være sikker på at current blir fjernet, og ikke et annet element som har samme data som current.
+            @Override
+            public void remove() {
+                current.previous.next = current.next;
+                current.next.previous = current.previous;
+                current.next = null;
+                current.previous = null;
+                current.data = null;
+                --size;
             }
         };
     }

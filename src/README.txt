@@ -4,3 +4,6 @@ Deloppgave 6)
     hver element. Den er O(n) for 2n er det samme som n i Big O-notasjon.
     Concat() har kjøretid O(n*m). Den går gjennom hver liste, og legger til hvert element fra hver liste inn i
     en ny liste.
+
+Deloppgave 12)
+    filter(), map(), og reduce() har kjøretide O(n). Hver av dem går gjennom hele listen en gang.
