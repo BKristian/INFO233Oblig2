@@ -272,20 +272,20 @@ class IListImplTest {
      */
     @Test
     void oppgave8_1() {
-        IList<String> list2 = new IListImpl<>();
-        List<String> values2 = Arrays.asList("String", "Blueberry", "Red", "Ananas", "X-men");
+        IList<String> list = new IListImpl<>();
+        List<String> values = Arrays.asList("String", "Blue", "Red", "X-men", "Azure", "Orange", "Yellow");
 
-        for (String value : values2) {
-            list2.add(value);
+
+        for (String value : values) {
+            list.add(value);
         }
-        list2.sort(Comparator.naturalOrder());
+        list.sort(Comparator.naturalOrder());
+        values.sort(Comparator.naturalOrder());
 
-        Iterator<String> iterator = list2.iterator();
-        assertEquals("Ananas", iterator.next());
-        assertEquals("Blueberry", iterator.next());
-        assertEquals("Red", iterator.next());
-        assertEquals("String", iterator.next());
-        assertEquals("X-men", iterator.next());
+        Iterator<String> iterator = list.iterator();
+        for (String s : values) {
+            assertEquals(s, iterator.next());
+        }
     }
 
     /**

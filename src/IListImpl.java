@@ -6,28 +6,28 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class IListImpl<E> implements IList<E> {
-    private IList<E> liste;
-    private Node first; // Starten på listen, er tom
-    private Node last;  // Slutten på listen, er tom
+    private IList<E> myList;
+    private Node head; // Starten på listen, er tom
+    private Node tail;  // Slutten på listen, er tom
     private int size;   // Antall noder i listen
 
     public IListImpl() {
-        first = new Node();
-        last = new Node();
-        first.next = last;
-        last.previous = first;
+        head = new Node();
+        tail = new Node();
+        head.next = tail;
+        tail.previous = head;
         size = 0;
     }
 
     public IListImpl(E elem) {
-        liste = new IListImpl<>();
-        liste.add(elem);
+        myList = new IListImpl<>();
+        myList.add(elem);
     }
 
     public IListImpl(E elem, IList<E> list) {
-        liste = new IListImpl<>();
-        liste.add(elem);
-        liste.append(list);
+        myList = new IListImpl<>();
+        myList.add(elem);
+        myList.append(list);
     }
 
     private class Node {
@@ -41,7 +41,7 @@ public class IListImpl<E> implements IList<E> {
         if(isEmpty()) {
             throw new NoSuchElementException();
         }
-        return first.next.data;
+        return head.next.data;
     }
 
     @Override
@@ -61,10 +61,10 @@ public class IListImpl<E> implements IList<E> {
     public boolean add(E elem) {
         Node newNode = new Node();
         newNode.data = elem;
-        newNode.next = last;
-        newNode.previous = last.previous;
+        newNode.next = tail;
+        newNode.previous = tail.previous;
         newNode.previous.next = newNode;
-        last.previous = newNode;
+        tail.previous = newNode;
         ++size;
         return true;
     }
@@ -73,10 +73,10 @@ public class IListImpl<E> implements IList<E> {
     public boolean put(E elem) {
         Node newNode = new Node();
         newNode.data = elem;
-        newNode.previous = first;
-        newNode.next = first.next;
+        newNode.previous = head;
+        newNode.next = head.next;
         newNode.next.previous = newNode;
-        first.next = newNode;
+        head.next = newNode;
         ++size;
         return true;
     }
@@ -86,9 +86,9 @@ public class IListImpl<E> implements IList<E> {
         if(isEmpty()) {
             throw new NoSuchElementException();
         }
-        Node toRemove = first.next;
-        first.next = toRemove.next;
-        toRemove.next.previous = first;
+        Node toRemove = head.next;
+        head.next = toRemove.next;
+        toRemove.next.previous = head;
         toRemove.next = null;
         toRemove.previous = null;
         --size;
@@ -97,8 +97,8 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public boolean remove(Object o) {
-        Node node = first;
-        while(node.next != last) {
+        Node node = head;
+        while(node.next != tail) {
             node = node.next;
             if(node.data == o) {
                 node.previous.next = node.next;
@@ -137,14 +137,12 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public void prepend(IList<? extends E> list) {
-        Iterator<? extends E> iterator = list.iterator();
         IList<E> tempList = new IListImpl<>();
-        while(iterator.hasNext()) {
-            tempList.put(iterator.next()); // put() legger alltid elementet inn først, så listen blir reversert
+        for (E e : list) {
+            tempList.put(e); // put() legger alltid elementet inn først, så listen blir reversert
         }
-        iterator = tempList.iterator();
-        while(iterator.hasNext()) {
-            this.put(iterator.next()); // Den reverserte listen blir lagt til med put(), som legger elementene inn i rett rekkefølge
+        for(E e: tempList) {
+            this.put(e); // Den reverserte listen blir lagt til med put(), som legger elementene inn i rett rekkefølge
         }
     }
 
@@ -167,14 +165,14 @@ public class IListImpl<E> implements IList<E> {
         if(size < 2) {
             throw new NoSuchElementException();
         }
-
+        mergeSort(c);
         /*
         // Bubblesort
-        Node current = first.next;
+        Node current = head.next;
         Node next;
-        while(current.next != last) {
+        while(current.next != tail) {
             next = current.next;
-            while(next != last) {
+            while(next != tail) {
                 if (c.compare(current.data, next.data) > 0) {
                     E temp = next.data;
                     next.data = current.data;
@@ -185,6 +183,42 @@ public class IListImpl<E> implements IList<E> {
             current = current.next;
         }
         */
+    }
+
+    private void mergeSort(Comparator<? super E> c) {
+        Node first = head.next;
+        Node last = tail.previous;
+        Node mid = first;
+        for(int i = 0; i < size / 2; i++) {
+            mid = mid.next;
+        }
+
+        IListImpl<E> left = mergeSort(first, mid, c);
+        IListImpl<E> right = mergeSort(mid.next, last, c);
+        merge(left, right, c);
+    }
+
+    private IListImpl<E> mergeSort(Node start, Node end, Comparator<? super E> c) {
+        if (start.next == end) {
+            IListImpl<E> stop = new IListImpl<>();
+            stop.add(start.data);
+            return stop;
+        }
+        Node mid = start;
+        for (int i = 0; i < size / 2; i++) {
+            mid = mid.next;
+        }
+
+        IListImpl<E> left = mergeSort(start, mid, c);
+        IListImpl<E> right = mergeSort(mid.next, end, c);
+        return merge(left, right, c);
+    }
+
+    private IListImpl<E> merge(IListImpl<E> left, IListImpl<E> right, Comparator<? super E> c) {
+        IListImpl<E> result = new IListImpl<>();
+        Node leftStart = left.head.next;
+        Node leftEnd = right.
+        while(left.)
     }
 
     @Override
@@ -222,8 +256,8 @@ public class IListImpl<E> implements IList<E> {
     @Override
     public void clear() {
         Node node = new Node();
-        while(node != last) {
-            node = first.next;
+        while(node != tail) {
+            node = head.next;
             node.data = null;
             node.next = null;
             node.previous = null;
@@ -233,11 +267,11 @@ public class IListImpl<E> implements IList<E> {
     @Override
     public Iterator<E> iterator() {
         return new Iterator<E>() {
-            private Node current = first.next;
+            private Node current = head.next;
 
             @Override
             public boolean hasNext() {
-                return current != last;
+                return current != tail;
             }
 
             @Override
