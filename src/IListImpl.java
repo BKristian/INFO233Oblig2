@@ -165,7 +165,9 @@ public class IListImpl<E> implements IList<E> {
         if(size < 2) {
             throw new NoSuchElementException();
         }
-        mergeSort(c);
+        IListImpl<E> sorted = this.mergeSort(this, c);
+        this.clear();
+        this.append(sorted);
         /*
         // Bubblesort
         Node current = head.next;
@@ -185,40 +187,54 @@ public class IListImpl<E> implements IList<E> {
         */
     }
 
-    private void mergeSort(Comparator<? super E> c) {
-        Node first = head.next;
-        Node last = tail.previous;
-        Node mid = first;
-        for(int i = 0; i < size / 2; i++) {
-            mid = mid.next;
+    private IListImpl<E> mergeSort(IListImpl<E> list, Comparator<? super E> c) {
+        if (list.size() < 2) {
+            return list;
+        }
+        IListImpl<E> left   = new IListImpl<>();
+        IListImpl<E> right  = new IListImpl<>();
+        IListImpl<E> result;
+
+        int middle = list.size() / 2;
+
+        int added = 0;
+        for(E item: list) {
+            if(added < middle) {
+                left.add(item);
+                ++added;
+            } else {
+                right.add(item);
+            }
         }
 
-        IListImpl<E> left = mergeSort(first, mid, c);
-        IListImpl<E> right = mergeSort(mid.next, last, c);
-        merge(left, right, c);
-    }
+        left = mergeSort(left, c);
+        right = mergeSort(right, c);
 
-    private IListImpl<E> mergeSort(Node start, Node end, Comparator<? super E> c) {
-        if (start.next == end) {
-            IListImpl<E> stop = new IListImpl<>();
-            stop.add(start.data);
-            return stop;
-        }
-        Node mid = start;
-        for (int i = 0; i < size / 2; i++) {
-            mid = mid.next;
-        }
-
-        IListImpl<E> left = mergeSort(start, mid, c);
-        IListImpl<E> right = mergeSort(mid.next, end, c);
-        return merge(left, right, c);
+        result = merge(left, right,c );
+        return result;
     }
 
     private IListImpl<E> merge(IListImpl<E> left, IListImpl<E> right, Comparator<? super E> c) {
         IListImpl<E> result = new IListImpl<>();
-        Node leftStart = left.head.next;
-        Node leftEnd = right.
-        while(left.)
+        while((left.size() > 0) && (right.size() > 0)) {
+            if (c.compare(left.first(), right.first()) < 0) {
+                result.add(left.remove());
+            } else {
+                result.add(right.remove());
+            }
+        }
+
+        if(left.size() > 0) {
+            for (E elem : left) {
+                result.add(elem);
+            }
+        } else {
+            for (E elem : right) {
+                result.add(elem);
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -255,13 +271,9 @@ public class IListImpl<E> implements IList<E> {
 
     @Override
     public void clear() {
-        Node node = new Node();
-        while(node != tail) {
-            node = head.next;
-            node.data = null;
-            node.next = null;
-            node.previous = null;
-        }
+        head.next = tail;
+        tail.previous = head;
+        size = 0;
     }
 
     @Override
