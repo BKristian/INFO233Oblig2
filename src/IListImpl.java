@@ -89,8 +89,6 @@ public class IListImpl<E> implements IList<E> {
         Node toRemove = head.next;
         head.next = toRemove.next;
         toRemove.next.previous = head;
-        toRemove.next = null;
-        toRemove.previous = null;
         --size;
         return toRemove.data;
     }
@@ -103,9 +101,6 @@ public class IListImpl<E> implements IList<E> {
             if(node.data == o) {
                 node.previous.next = node.next;
                 node.next.previous = node.previous;
-                node.next = null;
-                node.previous = null;
-                node.data = null;
                 --size;
                 return true;
             }
@@ -225,13 +220,9 @@ public class IListImpl<E> implements IList<E> {
         }
 
         if(left.size() > 0) {
-            for (E elem : left) {
-                result.add(elem);
-            }
+            result.append(left);
         } else {
-            for (E elem : right) {
-                result.add(elem);
-            }
+            result.append(right);
         }
 
         return result;
@@ -301,9 +292,6 @@ public class IListImpl<E> implements IList<E> {
             public void remove() {
                 current.previous.next = current.next;
                 current.next.previous = current.previous;
-                current.next = null;
-                current.previous = null;
-                current.data = null;
                 --size;
             }
         };
